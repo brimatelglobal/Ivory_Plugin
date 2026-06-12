@@ -406,6 +406,14 @@
       }
     }
 
+    // Force native picker open on desktop clicks
+    ciInput && ciInput.addEventListener('click', (e) => {
+      try { e.target.showPicker(); } catch (err) {}
+    });
+    coInput && coInput.addEventListener('click', (e) => {
+      try { e.target.showPicker(); } catch (err) {}
+    });
+
     ciInput && ciInput.addEventListener('change', () => {
       checkin = ciInput.value;
       if (coInput) {
