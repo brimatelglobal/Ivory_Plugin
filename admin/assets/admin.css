@@ -1,0 +1,408 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Ivory Booking — Admin Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --iv-green:      #0F3714;
+  --iv-green-mid:  #1C4B21;
+  --iv-gold:       #D3AD63;
+  --iv-gold-dark:  #856637;
+  --iv-ivory:      #F7F5EE;
+  --iv-border:     #e0ddd6;
+  --iv-radius:     8px;
+  --iv-shadow:     0 2px 12px rgba(0,0,0,.07);
+  --iv-font:       -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.ivory-admin-wrap { font-family: var(--iv-font); max-width: 1200px; }
+
+.iv-admin-page-title {
+  color: var(--iv-green) !important;
+  font-size: 22px !important;
+  border-bottom: 3px solid var(--iv-gold);
+  padding-bottom: 10px;
+  margin-bottom: 24px !important;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ── Card ───────────────────────────────────────────────────────────────── */
+.iv-admin-card {
+  background: #fff;
+  border: 1px solid var(--iv-border);
+  border-radius: var(--iv-radius);
+  padding: 24px 28px;
+  box-shadow: var(--iv-shadow);
+  margin-bottom: 24px;
+}
+
+.iv-admin-card h3 {
+  color: var(--iv-green);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--iv-border);
+}
+
+/* ── Status & source badges ─────────────────────────────────────────────── */
+.iv-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.iv-status-confirmed { background: #e6f4ea; color: #1e7e34; }
+.iv-status-pending   { background: #fff3cd; color: #856404; }
+.iv-status-cancelled { background: #fce8e8; color: #c62828; }
+.iv-status-completed { background: #e8f0fe; color: #1a57c8; }
+.iv-status-ok        { background: #e6f4ea; color: #1e7e34; }
+
+.iv-source-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #555;
+}
+.iv-source-website { background: #e8f0fe; color: #1a57c8; }
+.iv-source-airbnb  { background: #fff0f0; color: #c62828; }
+.iv-source-manual  { background: #f5f0ff; color: #6200ea; }
+
+/* ── Status tabs ────────────────────────────────────────────────────────── */
+.iv-status-tabs {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  border-bottom: 2px solid var(--iv-border);
+  flex-wrap: wrap;
+}
+.iv-status-tabs li a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  color: #555;
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+}
+.iv-status-tabs li a:hover { color: var(--iv-green); }
+.iv-status-tabs li a.active {
+  color: var(--iv-green);
+  border-bottom-color: var(--iv-gold);
+  font-weight: 700;
+}
+.iv-tab-count {
+  background: #eee;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  color: #666;
+}
+
+/* ── Search form ────────────────────────────────────────────────────────── */
+.iv-search-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.iv-search-form input[type="search"] {
+  width: 280px;
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--iv-radius);
+  font-size: 13px;
+}
+
+/* ── Bookings table ─────────────────────────────────────────────────────── */
+.iv-bookings-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  background: #fff;
+  border-radius: var(--iv-radius);
+  box-shadow: var(--iv-shadow);
+  overflow: hidden;
+}
+.iv-bookings-table thead th {
+  background: var(--iv-green);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 10px 14px;
+  text-align: left;
+}
+.iv-bookings-table tbody tr {
+  border-bottom: 1px solid var(--iv-border);
+  transition: background .1s;
+}
+.iv-bookings-table tbody tr:hover { background: var(--iv-ivory); }
+.iv-bookings-table td { padding: 10px 14px; vertical-align: middle; }
+
+.iv-ref-link {
+  color: var(--iv-green);
+  font-weight: 700;
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 13px;
+}
+.iv-ref-link:hover { color: var(--iv-gold-dark); text-decoration: underline; }
+
+.iv-empty-state {
+  text-align: center;
+  padding: 40px !important;
+  color: #999;
+  font-style: italic;
+}
+
+/* ── Detail panel ───────────────────────────────────────────────────────── */
+.iv-detail-panel {
+  background: #fff;
+  border: 1px solid var(--iv-border);
+  border-radius: var(--iv-radius);
+  padding: 28px;
+  margin-top: 24px;
+  box-shadow: var(--iv-shadow);
+}
+.iv-detail-panel h2 {
+  color: var(--iv-green);
+  font-family: monospace;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+.iv-detail-grid { margin-bottom: 20px; }
+.iv-detail-row {
+  display: flex;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--iv-border);
+  font-size: 13px;
+  gap: 16px;
+}
+.iv-detail-row:last-child { border-bottom: none; }
+.iv-detail-label { font-weight: 600; color: var(--iv-gold-dark); width: 160px; flex-shrink: 0; }
+.iv-detail-value { color: #333; }
+
+/* ── Settings form ──────────────────────────────────────────────────────── */
+.iv-settings-form { max-width: 760px; }
+
+.iv-settings-section {
+  background: #fff;
+  border: 1px solid var(--iv-border);
+  border-radius: var(--iv-radius);
+  margin-bottom: 24px;
+  overflow: hidden;
+  box-shadow: var(--iv-shadow);
+}
+.iv-settings-section-header {
+  background: var(--iv-ivory);
+  border-bottom: 1px solid var(--iv-border);
+  padding: 16px 24px;
+}
+.iv-settings-section-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--iv-green);
+  margin: 0 0 4px;
+}
+.iv-settings-section-header p { font-size: 13px; color: #777; margin: 0; }
+
+.iv-settings-body { padding: 20px 24px; }
+.iv-settings-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.iv-settings-row label {
+  width: 200px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+.iv-settings-row:last-child { margin-bottom: 0; }
+.iv-hint { display: block; font-size: 11px; font-weight: 400; color: #999; }
+.iv-key-saved { font-size: 12px; color: #1e7e34; display: block; margin-top: 4px; }
+
+/* ── iCal table ─────────────────────────────────────────────────────────── */
+.iv-ical-table { font-size: 13px; }
+.iv-ical-table th { background: var(--iv-ivory); color: var(--iv-green); font-weight: 600; }
+.iv-ical-table td { padding: 10px 12px; border-bottom: 1px solid var(--iv-border); }
+
+/* ── Admin calendar layout ──────────────────────────────────────────────── */
+.iv-admin-calendar-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) { .iv-admin-calendar-layout { grid-template-columns: 1fr; } }
+
+.iv-admin-cal-card {
+  background: var(--iv-green);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.15);
+}
+
+/* Admin calendar day grid */
+#iv-admin-calendar .iv-weekdays span { color: rgba(255,255,255,.45); }
+#iv-admin-calendar .iv-day { color: rgba(255,255,255,.85); }
+#iv-admin-calendar .iv-day--booked  { background: var(--iv-gold) !important; color: var(--iv-green) !important; font-weight: 700; cursor: default; }
+#iv-admin-calendar .iv-day--blocked { background: hsl(0,60%,55%) !important; color: #fff !important; cursor: default; }
+#iv-admin-calendar .iv-day--synced  { background: hsl(200,60%,45%) !important; color: #fff !important; cursor: default; }
+#iv-admin-calendar .iv-day--today   { outline: 2px solid var(--iv-gold); }
+
+/* Legend dots */
+.iv-legend { list-style: none; padding: 0; margin: 0; }
+.iv-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; }
+.iv-dot { display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.iv-dot--booked  { background: var(--iv-gold); }
+.iv-dot--blocked { background: hsl(0,60%,55%); }
+.iv-dot--synced  { background: hsl(200,60%,45%); }
+.iv-dot--today   { border: 2px solid var(--iv-gold); background: transparent; }
+
+/* Blocks list */
+.iv-blocks-list { list-style: none; padding: 0; margin: 0; }
+.iv-block-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--iv-border);
+  font-size: 13px;
+}
+.iv-block-item:last-child { border-bottom: none; }
+
+/* Field helpers */
+.iv-field { margin-bottom: 14px; }
+.iv-field label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.iv-field input, .iv-field select, .iv-field textarea { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+.iv-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Modal */
+.iv-modal {
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center;
+}
+.iv-modal-inner { background: #fff; border-radius: 12px; padding: 32px;
+  width: 460px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+.iv-modal-inner h2 { color: var(--iv-green); font-size: 18px; margin-bottom: 20px; }
+
+/* ── Feature 2: Interactive calendar date selection ──────────────────────── */
+#iv-admin-calendar .iv-day--select-start {
+  background: var(--iv-gold) !important;
+  color: var(--iv-green) !important;
+  font-weight: 700;
+  border-radius: 6px;
+  outline: 2px solid var(--iv-gold-dark);
+  outline-offset: 1px;
+  position: relative;
+  z-index: 2;
+}
+
+#iv-admin-calendar .iv-day--select-preview {
+  background: rgba(211, 173, 99, 0.28) !important;
+  color: rgba(255,255,255, 0.9) !important;
+  border-radius: 0;
+}
+
+/* Hint shown below the calendar when a start date is selected */
+.iv-cal-selection-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--iv-gold);
+  margin-top: 12px;
+  opacity: 0.85;
+  font-style: italic;
+  min-height: 18px;
+}
+
+/* ── Feature 3: Booking action buttons ───────────────────────────────────── */
+.iv-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--iv-border);
+}
+
+/* Cancel button: danger red */
+.iv-cancel-btn {
+  background: hsl(0, 65%, 96%) !important;
+  border-color: hsl(0, 60%, 78%) !important;
+  color: hsl(0, 60%, 38%) !important;
+  font-weight: 600 !important;
+  transition: background .15s, color .15s !important;
+}
+.iv-cancel-btn:hover:not(:disabled) {
+  background: hsl(0, 65%, 88%) !important;
+  border-color: hsl(0, 60%, 65%) !important;
+  color: hsl(0, 65%, 28%) !important;
+}
+
+/* Complete button: muted forest green */
+.iv-complete-btn {
+  background: hsl(135, 45%, 94%) !important;
+  border-color: hsl(135, 40%, 72%) !important;
+  color: hsl(135, 55%, 28%) !important;
+  font-weight: 600 !important;
+  transition: background .15s, color .15s !important;
+}
+.iv-complete-btn:hover:not(:disabled) {
+  background: hsl(135, 45%, 86%) !important;
+  border-color: hsl(135, 45%, 58%) !important;
+  color: hsl(135, 60%, 20%) !important;
+}
+
+/* Status feedback bar */
+.iv-status-feedback {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--iv-radius);
+  font-size: 13px;
+  font-weight: 500;
+  background: #f9f9f9;
+  border: 1px solid var(--iv-border);
+}
+
+/* ── Feature 1: Gov. ID viewer link ──────────────────────────────────────── */
+.iv-view-id-link {
+  color: var(--iv-green);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  padding: 3px 8px;
+  border: 1px solid var(--iv-border);
+  border-radius: 4px;
+  background: var(--iv-ivory);
+  transition: background .15s, border-color .15s;
+}
+.iv-view-id-link:hover {
+  background: hsl(38, 50%, 90%);
+  border-color: var(--iv-gold);
+  color: var(--iv-gold-dark);
+}

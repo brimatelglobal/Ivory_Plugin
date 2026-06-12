@@ -1,0 +1,752 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Ivory Booking — Guest-Facing Styles
+   Premium dark-green & gold palette. No frameworks. Pure CSS.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --iv-green-deep:    hsl(135, 60%, 13%);   /* #0F3714 */
+  --iv-green-mid:     hsl(135, 55%, 20%);   /* #1C4B21 */
+  --iv-green-light:   hsl(135, 40%, 28%);   /* #2D6637 */
+  --iv-gold:          hsl(38,  55%, 61%);   /* #D3AD63 */
+  --iv-gold-dark:     hsl(30,  45%, 37%);   /* #856637 */
+  --iv-gold-light:    hsl(42,  70%, 82%);   /* #EDD9A0 */
+  --iv-ivory:         hsl(55,  30%, 96%);   /* #F7F5EE */
+  --iv-ivory-dark:    hsl(40,  20%, 90%);   /* #EDE8DF */
+  --iv-text:          hsl(135, 60%, 10%);   /* #0A250E */
+  --iv-text-muted:    hsl(135, 15%, 40%);
+  --iv-white:         #ffffff;
+  --iv-error:         hsl(0,   70%, 55%);
+  --iv-success:       hsl(135, 55%, 35%);
+  --iv-radius-sm:     6px;
+  --iv-radius-md:     12px;
+  --iv-radius-lg:     20px;
+  --iv-shadow-sm:     0 2px 8px rgba(0,0,0,.08);
+  --iv-shadow-md:     0 8px 32px rgba(0,0,0,.12);
+  --iv-shadow-lg:     0 20px 60px rgba(0,0,0,.18);
+  --iv-transition:    0.22s ease;
+  --iv-font:          'Satoshi', 'Segoe UI', Arial, sans-serif;
+  --iv-font-display:  'General Sans', 'Segoe UI', Arial, sans-serif;
+}
+
+/* ── Reset (scoped to plugin) ──────────────────────────────────────────────── */
+.ivory-wrap *,
+.ivory-wrap *::before,
+.ivory-wrap *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.ivory-wrap {
+  font-family: var(--iv-font);
+  color: var(--iv-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOOKING WIDGET (shortcode: [ivory_booking])
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ivory-booking-widget {
+  background: linear-gradient(150deg, hsl(38, 42%, 88%) 0%, hsl(46, 52%, 95%) 55%, hsl(55, 45%, 98%) 100%);
+  border: 1px solid hsl(38, 30%, 80%);
+  border-radius: var(--iv-radius-lg);
+  padding: 48px 40px;
+  box-shadow: 0 8px 40px rgba(120, 80, 20, 0.10);
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* ── Section header ─────────────────────────────────────────────────────── */
+.ivory-widget-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.ivory-widget-header .iv-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--iv-gold);
+  margin-bottom: 8px;
+}
+
+.ivory-widget-header h2 {
+  font-family: var(--iv-font-display);
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 700;
+  color: hsl(30, 40%, 22%);
+  line-height: 1.15;
+}
+
+.ivory-widget-header p {
+  color: hsl(30, 20%, 48%);
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+/* ── Calendar container ─────────────────────────────────────────────────── */
+.ivory-calendar-outer {
+  background: rgba(255,255,255,0.75);
+  border: 1px solid hsl(38, 30%, 80%);
+  border-radius: var(--iv-radius-md);
+  padding: 24px;
+  margin-bottom: 28px;
+  backdrop-filter: blur(2px);
+  overflow: hidden;
+}
+
+/* Month navigation */
+.iv-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.iv-cal-months {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .iv-cal-months { grid-template-columns: 1fr; }
+  .iv-cal-months .iv-month:last-child { display: none; }
+  /* On mobile, hide the second month label and centre the first */
+  .iv-label-secondary { display: none; }
+  .iv-cal-labels      { gap: 0; justify-content: center; }
+}
+
+.iv-cal-arrow {
+  background: hsl(38, 30%, 88%);
+  border: 1px solid hsl(38, 30%, 74%);
+  color: hsl(30, 40%, 28%);
+  border-radius: var(--iv-radius-sm);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background var(--iv-transition);
+  font-size: 18px;
+}
+.iv-cal-arrow:hover { background: hsl(38, 45%, 80%); }
+
+.iv-cal-labels {
+  display: flex;
+  gap: 80px;
+  align-items: center;
+}
+
+.iv-cal-month-label {
+  font-family: var(--iv-font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: hsl(30, 40%, 22%);
+  text-align: center;
+}
+
+/* Day grid */
+.iv-month { position: relative; min-width: 0; }
+
+.iv-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+.iv-weekdays span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(30, 20%, 52%);
+  padding: 4px 0;
+}
+
+.iv-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.iv-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--iv-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(30, 35%, 22%);
+  cursor: pointer;
+  transition: background var(--iv-transition), color var(--iv-transition);
+  position: relative;
+  user-select: none;
+}
+
+.iv-day:hover:not(.iv-day--disabled):not(.iv-day--booked) {
+  background: hsl(38, 70%, 82%);
+  color: hsl(30, 45%, 22%);
+}
+
+/* States */
+.iv-day--empty       { cursor: default; }
+.iv-day--past        { opacity: 0.3; cursor: not-allowed; }
+.iv-day--booked {
+  background: hsl(0, 0%, 82%);
+  color: hsl(0, 0%, 42%);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.iv-day--in-range {
+  background: hsl(38, 70%, 86%);
+  color: hsl(30, 45%, 22%);
+  border-radius: 0;
+}
+
+/* Hover preview (not yet confirmed) */
+.iv-day--hover-checkout {
+  background: var(--iv-gold) !important;
+  color: var(--iv-green-deep) !important;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.iv-day--hover-in-range {
+  background: hsl(38, 70%, 86%);
+  color: hsl(30, 45%, 22%);
+  border-radius: 0;
+  opacity: 0.7;
+}
+.iv-day--checkin,
+.iv-day--checkout {
+  background: var(--iv-gold) !important;
+  color: var(--iv-green-deep) !important;
+  font-weight: 700;
+  z-index: 1;
+}
+.iv-day--checkin  { border-radius: var(--iv-radius-sm) 0 0 var(--iv-radius-sm); }
+.iv-day--checkout { border-radius: 0 var(--iv-radius-sm) var(--iv-radius-sm) 0; }
+.iv-day--checkin.iv-day--checkout { border-radius: var(--iv-radius-sm); }
+
+.iv-day--disabled { opacity: 0.2; cursor: not-allowed; }
+
+/* Tooltip */
+.iv-day[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(30, 40%, 20%);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Price summary ──────────────────────────────────────────────────────── */
+.ivory-price-summary {
+  background: rgba(255,255,255,0.75);
+  border: 1px solid hsl(38, 30%, 80%);
+  border-radius: var(--iv-radius-md);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 64px;
+}
+
+.iv-summary-placeholder {
+  color: hsl(30, 20%, 52%);
+  font-size: 14px;
+}
+
+.iv-summary-details {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.iv-summary-item { font-size: 14px; color: hsl(30, 20%, 45%); }
+.iv-summary-item strong { color: hsl(30, 35%, 22%); }
+
+.iv-summary-total {
+  font-family: var(--iv-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--iv-gold-dark);
+}
+
+/* ── Guest selector ─────────────────────────────────────────────────────── */
+.ivory-guest-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.iv-guest-label {
+  color: hsl(30, 25%, 40%);
+  font-size: 14px;
+}
+
+.iv-guest-toggle {
+  display: flex;
+  background: hsl(38, 25%, 90%);
+  border: 1px solid hsl(38, 30%, 76%);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.iv-guest-btn {
+  padding: 8px 20px;
+  background: transparent;
+  border: none;
+  color: hsl(30, 25%, 40%);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--iv-transition), color var(--iv-transition);
+}
+.iv-guest-btn.active {
+  background: var(--iv-gold);
+  color: var(--iv-green-deep);
+  font-weight: 700;
+}
+
+/* ── Book Now button ────────────────────────────────────────────────────── */
+.ivory-book-btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--iv-green-deep);
+  color: var(--iv-gold);
+  font-family: var(--iv-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--iv-radius-md);
+  cursor: pointer;
+  transition: background var(--iv-transition), transform 0.15s, box-shadow var(--iv-transition);
+  box-shadow: 0 4px 20px rgba(15, 55, 20, 0.25);
+}
+.ivory-book-btn:hover {
+  background: var(--iv-green-mid);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(15, 55, 20, 0.35);
+}
+.ivory-book-btn:active { transform: translateY(0); }
+.ivory-book-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHECKOUT PAGE (shortcode: [ivory_checkout])
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ivory-checkout-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 36px;
+  align-items: start;
+  padding: 40px 20px;
+}
+
+@media (max-width: 768px) {
+  .ivory-checkout-wrap { grid-template-columns: 1fr; }
+  .ivory-checkout-summary { order: -1; }
+}
+
+/* ── Form panel ─────────────────────────────────────────────────────────── */
+.ivory-checkout-form {
+  background: var(--iv-white);
+  border-radius: var(--iv-radius-lg);
+  padding: 36px;
+  box-shadow: var(--iv-shadow-md);
+}
+
+.ivory-checkout-form h2 {
+  font-family: var(--iv-font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--iv-green-deep);
+  margin-bottom: 28px;
+}
+
+.iv-field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 520px) { .iv-field-group { grid-template-columns: 1fr; } }
+
+.iv-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.iv-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--iv-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.iv-field label .required { color: var(--iv-error); margin-left: 2px; }
+
+.iv-field input,
+.iv-field textarea,
+.iv-field select {
+  border: 1.5px solid var(--iv-ivory-dark);
+  border-radius: var(--iv-radius-sm);
+  padding: 11px 14px;
+  font-family: var(--iv-font);
+  font-size: 14px;
+  color: var(--iv-text);
+  background: var(--iv-ivory);
+  transition: border-color var(--iv-transition), box-shadow var(--iv-transition);
+  outline: none;
+}
+.iv-field input:focus,
+.iv-field textarea:focus {
+  border-color: var(--iv-gold);
+  box-shadow: 0 0 0 3px rgba(211,173,99,0.18);
+  background: var(--iv-white);
+}
+.iv-field input.error { border-color: var(--iv-error); }
+
+.iv-field textarea { resize: vertical; min-height: 90px; }
+
+/* File upload */
+.iv-file-upload {
+  border: 1.5px dashed var(--iv-gold);
+  border-radius: var(--iv-radius-sm);
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--iv-ivory);
+  transition: background var(--iv-transition);
+  position: relative;
+}
+.iv-file-upload:hover { background: var(--iv-gold-light); }
+.iv-file-upload input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+.iv-file-upload .iv-file-label {
+  font-size: 13px;
+  color: var(--iv-gold-dark);
+  font-weight: 600;
+}
+.iv-file-upload .iv-file-label span { color: var(--iv-text-muted); font-weight: 400; }
+.iv-file-name { font-size: 12px; color: var(--iv-success); margin-top: 6px; }
+
+/* Proceed button */
+.ivory-proceed-btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--iv-green-deep);
+  color: var(--iv-white);
+  font-family: var(--iv-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--iv-radius-md);
+  cursor: pointer;
+  margin-top: 24px;
+  transition: background var(--iv-transition), transform 0.15s;
+}
+.ivory-proceed-btn:hover { background: var(--iv-green-mid); transform: translateY(-2px); }
+.ivory-proceed-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Loading spinner */
+.iv-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: iv-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes iv-spin { to { transform: rotate(360deg); } }
+
+/* Error message */
+.iv-form-error {
+  background: hsl(0, 80%, 96%);
+  border: 1px solid hsl(0, 70%, 85%);
+  color: hsl(0, 65%, 40%);
+  border-radius: var(--iv-radius-sm);
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-top: 16px;
+  display: none;
+}
+.iv-form-error.visible { display: block; }
+
+/* ── Summary panel ──────────────────────────────────────────────────────── */
+.ivory-checkout-summary {
+  background: linear-gradient(170deg, var(--iv-green-deep) 0%, var(--iv-green-mid) 100%);
+  border-radius: var(--iv-radius-lg);
+  padding: 32px 28px;
+  box-shadow: var(--iv-shadow-md);
+  color: var(--iv-white);
+}
+
+.ivory-checkout-summary h3 {
+  font-family: var(--iv-font-display);
+  font-size: 18px;
+  color: var(--iv-gold);
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.iv-sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  margin-bottom: 14px;
+  color: rgba(255,255,255,0.8);
+}
+.iv-sum-row.total {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--iv-gold);
+}
+.iv-sum-row strong { color: var(--iv-white); }
+
+/* ── Editable date inputs inside summary ─────────────────────────────────── */
+.iv-sum-dates-row { align-items: center; }
+
+.iv-date-edit {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  color: var(--iv-white);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 5px 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color-scheme: dark;
+}
+.iv-date-edit:hover  { border-color: var(--iv-gold); background: rgba(255,255,255,0.12); }
+.iv-date-edit:focus  { outline: none; border-color: var(--iv-gold); background: rgba(255,255,255,0.15); }
+
+.iv-dates-hint {
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  margin: -6px 0 10px;
+  text-align: right;
+}
+
+
+.iv-policy-note {
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+}
+
+/* ── House Rules ─────────────────────────────────────────────────────────── */
+
+/* Dark variant — sits inside the dark-green summary panel */
+.iv-house-rules {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.iv-house-rules__title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--iv-gold);
+  margin: 0 0 10px;
+}
+
+.iv-house-rules__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rule-counter;
+}
+
+.iv-house-rules__list li {
+  counter-increment: rule-counter;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.55;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.iv-house-rules__list li:last-child { border-bottom: none; }
+
+.iv-house-rules__list li::before {
+  content: counter(rule-counter);
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--iv-gold);
+  color: var(--iv-green-deep);
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+/* Light variant — used on the confirmation page (white card) */
+.iv-house-rules--light {
+  background: hsl(38, 40%, 96%);
+  border: 1px solid hsl(38, 30%, 84%);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  border-top: none;
+  padding-top: 18px;
+}
+
+.iv-house-rules--light .iv-house-rules__title {
+  color: var(--iv-green-deep);
+}
+
+.iv-house-rules--light .iv-house-rules__list li {
+  color: hsl(30, 20%, 30%);
+  border-bottom-color: hsl(38, 25%, 88%);
+}
+
+.iv-house-rules--light .iv-house-rules__list li::before {
+  background: var(--iv-green-deep);
+  color: var(--iv-gold);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONFIRMATION PAGE (shortcode: [ivory_confirmation])
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ivory-confirmation-wrap {
+  max-width: 620px;
+  margin: 40px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.ivory-confirmation-card {
+  background: var(--iv-white);
+  border-radius: var(--iv-radius-lg);
+  padding: 48px 40px;
+  box-shadow: var(--iv-shadow-lg);
+}
+
+.iv-confirm-icon {
+  width: 72px; height: 72px;
+  background: hsl(135, 55%, 92%);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+}
+.iv-confirm-icon svg { width: 36px; height: 36px; color: var(--iv-success); }
+
+.ivory-confirmation-card h1 {
+  font-family: var(--iv-font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--iv-green-deep);
+  margin-bottom: 8px;
+}
+
+.iv-ref-badge {
+  display: inline-block;
+  background: var(--iv-gold);
+  color: var(--iv-green-deep);
+  font-family: var(--iv-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 10px 28px;
+  border-radius: 8px;
+  margin: 20px 0 28px;
+}
+
+.iv-confirm-details {
+  text-align: left;
+  background: var(--iv-ivory);
+  border-radius: var(--iv-radius-md);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+}
+
+.iv-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--iv-ivory-dark);
+  font-size: 14px;
+}
+.iv-confirm-row:last-child { border-bottom: none; }
+.iv-confirm-row .label { color: var(--iv-gold-dark); font-weight: 600; }
+.iv-confirm-row .value { color: var(--iv-text); font-weight: 500; }
+
+.iv-print-btn {
+  display: inline-block;
+  padding: 13px 32px;
+  background: var(--iv-green-deep);
+  color: var(--iv-white);
+  border: none;
+  border-radius: var(--iv-radius-md);
+  font-family: var(--iv-font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--iv-transition);
+}
+.iv-print-btn:hover { background: var(--iv-green-mid); }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes iv-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ivory-booking-widget,
+.ivory-checkout-form,
+.ivory-checkout-summary,
+.ivory-confirmation-card {
+  animation: iv-fade-up 0.45s ease both;
+}
+
+/* ── Print ──────────────────────────────────────────────────────────────── */
+@media print {
+  .ivory-wrap :not(.ivory-confirmation-card):not(.ivory-confirmation-card *) { display: none !important; }
+  .iv-print-btn { display: none; }
+  .ivory-confirmation-card { box-shadow: none; border: 1px solid #ccc; }
+}
