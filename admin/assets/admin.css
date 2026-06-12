@@ -262,6 +262,28 @@
 }
 
 /* Admin calendar day grid */
+#iv-admin-calendar .iv-weekdays,
+#iv-admin-calendar .iv-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+#iv-admin-calendar .iv-weekdays {
+  margin-bottom: 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: 600;
+  text-align: center;
+}
+#iv-admin-calendar .iv-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+}
 #iv-admin-calendar .iv-weekdays span { color: rgba(255,255,255,.45); }
 #iv-admin-calendar .iv-day { color: rgba(255,255,255,.85); }
 #iv-admin-calendar .iv-day--booked  { background: var(--iv-gold) !important; color: var(--iv-green) !important; font-weight: 700; cursor: default; }
