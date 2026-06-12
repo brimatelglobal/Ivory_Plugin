@@ -66,7 +66,7 @@ class Ivory_Cron {
     // ─── Cron Callbacks ───────────────────────────────────────────────────────
 
     public static function run_lock_expiry(): void {
-        Ivory_Database::purge_expired_locks();
+        Ivory_Database::purge_expired_pending_bookings();
     }
 
     public static function run_ical_sync(): void {

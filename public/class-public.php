@@ -120,10 +120,10 @@ class Ivory_Public {
             'permission_callback' => '__return_true',
         ] );
 
-        // POST /ivory/v1/lock
-        register_rest_route( $namespace, '/lock', [
+        // POST /ivory/v1/booking/init
+        register_rest_route( $namespace, '/booking/init', [
             'methods'             => WP_REST_Server::CREATABLE,
-            'callback'            => [ $this, 'rest_lock' ],
+            'callback'            => [ $this, 'rest_init_booking' ],
             'permission_callback' => '__return_true',
             'args'                => [
                 'checkin'  => [ 'required' => true, 'sanitize_callback' => 'sanitize_text_field' ],
@@ -131,10 +131,10 @@ class Ivory_Public {
             ],
         ] );
 
-        // POST /ivory/v1/booking
-        register_rest_route( $namespace, '/booking', [
+        // POST /ivory/v1/booking/confirm
+        register_rest_route( $namespace, '/booking/confirm', [
             'methods'             => WP_REST_Server::CREATABLE,
-            'callback'            => [ $this, 'rest_create_booking' ],
+            'callback'            => [ $this, 'rest_confirm_booking' ],
             'permission_callback' => '__return_true',
         ] );
 
@@ -163,71 +163,61 @@ class Ivory_Public {
         return new WP_REST_Response( [ 'ranges' => $ranges ], 200 );
     }
 
-    public function rest_lock( WP_REST_Request $request ): WP_REST_Response {
-        // Verify nonce.
+    public function rest_init_booking( WP_REST_Request $request ): WP_REST_Response {
         if ( ! wp_verify_nonce( $request->get_header( 'X-WP-Nonce' ), 'wp_rest' ) ) {
             return new WP_REST_Response( [ 'success' => false, 'message' => 'Invalid nonce.' ], 403 );
         }
 
-        $checkin  = $request->get_param( 'checkin' );
-        $checkout = $request->get_param( 'checkout' );
-
-        $result = Ivory_Booking::create_lock( $checkin, $checkout );
-
-        // Fire a heads-up email to all admins so they can follow up if payment is abandoned.
-        if ( $result['success'] ) {
-            Ivory_Email::send_pending_booking_alert( [
-                'guest_name'    => sanitize_text_field( $request->get_param( 'name' )  ?? '' ),
-                'guest_email'   => sanitize_email(     $request->get_param( 'email' ) ?? '' ),
-                'guest_phone'   => sanitize_text_field( $request->get_param( 'phone' ) ?? '' ),
-                'checkin_date'  => $checkin,
-                'checkout_date' => $checkout,
-            ] );
-        }
-
-        $status = $result['success'] ? 200 : 409;
-
-        return new WP_REST_Response( $result, $status );
-    }
-
-    public function rest_create_booking( WP_REST_Request $request ): WP_REST_Response {
-        // Verify nonce.
-        if ( ! wp_verify_nonce( $request->get_header( 'X-WP-Nonce' ), 'wp_rest' ) ) {
-            return new WP_REST_Response( [ 'success' => false, 'message' => 'Invalid nonce.' ], 403 );
-        }
-
-        // Accept both application/json and multipart/form-data
-        $json  = (array) $request->get_json_params();
-        $body  = (array) $request->get_body_params();
-        $data  = ! empty( $json ) ? $json : $body;
-
-        $token       = sanitize_text_field( $data['session_token'] ?? '' );
-        $paystack_ref = sanitize_text_field( $data['paystack_ref'] ?? '' );
+        // Accept multipart/form-data
+        $body = (array) $request->get_body_params();
 
         // Handle government ID file upload if present.
         if ( ! empty( $_FILES['id_document'] ) ) {
             $upload = $this->handle_id_upload();
             if ( $upload ) {
-                $data['id_file_path'] = $upload;
+                $body['id_file_path'] = $upload;
             }
         }
 
-        // Step 1: Create the pending booking record (validates the lock).
-        $result = Ivory_Booking::create_booking( $data, $token );
+        $result = Ivory_Booking::init_booking( $body );
 
-        if ( ! $result['success'] ) {
-            return new WP_REST_Response( $result, 422 );
+        if ( $result['success'] ) {
+            Ivory_Email::send_pending_booking_alert( [
+                'guest_name'    => sanitize_text_field( $body['guest_name'] ?? '' ),
+                'guest_email'   => sanitize_email(      $body['email']      ?? '' ),
+                'guest_phone'   => sanitize_text_field( $body['phone']      ?? '' ),
+                'checkin_date'  => sanitize_text_field( $body['checkin']    ?? '' ),
+                'checkout_date' => sanitize_text_field( $body['checkout']   ?? '' ),
+            ] );
         }
 
-        // Step 2: Confirm immediately (mark confirmed + send emails).
-        // We do not wait for the Paystack webhook — we trust the inline callback.
-        $reference = $result['reference'];
-        Ivory_Booking::confirm_booking( $reference, $paystack_ref );
+        return new WP_REST_Response( $result, $result['success'] ? 200 : 422 );
+    }
 
-        return new WP_REST_Response(
-            array_merge( $result, [ 'status' => 'confirmed' ] ),
-            200
-        );
+    public function rest_confirm_booking( WP_REST_Request $request ): WP_REST_Response {
+        if ( ! wp_verify_nonce( $request->get_header( 'X-WP-Nonce' ), 'wp_rest' ) ) {
+            return new WP_REST_Response( [ 'success' => false, 'message' => 'Invalid nonce.' ], 403 );
+        }
+
+        $json = (array) $request->get_json_params();
+        $reference    = sanitize_text_field( $json['reference'] ?? '' );
+        $paystack_ref = sanitize_text_field( $json['paystack_ref'] ?? '' );
+
+        if ( empty( $reference ) || empty( $paystack_ref ) ) {
+            return new WP_REST_Response( [ 'success' => false, 'message' => 'Missing payment data.' ], 400 );
+        }
+
+        $confirmed = Ivory_Booking::confirm_booking( $reference, $paystack_ref );
+
+        if ( ! $confirmed ) {
+            return new WP_REST_Response( [ 'success' => false, 'message' => 'Could not confirm booking.' ], 500 );
+        }
+
+        return new WP_REST_Response( [
+            'success' => true,
+            'status'  => 'confirmed',
+            'message' => 'Booking confirmed successfully.'
+        ], 200 );
     }
 
     public function rest_paystack_webhook( WP_REST_Request $request ): WP_REST_Response {

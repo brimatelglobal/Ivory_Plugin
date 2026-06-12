@@ -426,16 +426,17 @@ class Ivory_Database {
     }
 
     /**
-     * Purge all expired date locks. Called by WP-Cron.
+     * Cancel all pending bookings older than 90 minutes. Called by WP-Cron.
      */
-    public static function purge_expired_locks(): int {
+    public static function purge_expired_pending_bookings(): int {
         global $wpdb;
-        $now_wat = wp_date( 'Y-m-d H:i:s' ); // WAT
+        $expiry_wat = wp_date( 'Y-m-d H:i:s', time() - 90 * MINUTE_IN_SECONDS ); // WAT 90 mins ago
+
         return (int) $wpdb->query(
             $wpdb->prepare(
-                "DELETE FROM %i WHERE expires_at <= %s",
-                self::table_locks(),
-                $now_wat
+                "UPDATE %i SET status = 'cancelled' WHERE status = 'pending' AND created_at <= %s",
+                self::table_bookings(),
+                $expiry_wat
             )
         );
     }

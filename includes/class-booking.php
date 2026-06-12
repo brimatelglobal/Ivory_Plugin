@@ -109,43 +109,28 @@ class Ivory_Booking {
     // ─── Booking Creation ─────────────────────────────────────────────────────
 
     /**
-     * Create a new pending booking, consuming the lock in the same transaction.
+     * Initialize a new pending booking.
+     * Acts as a lock until payment is confirmed or it expires.
      *
      * @param array<string, mixed> $data
      * @return array{success: bool, reference: string, booking_id: int, message: string}
      */
-    public static function create_booking( array $data, string $session_token ): array {
+    public static function init_booking( array $data ): array {
         global $wpdb;
 
         $checkin  = sanitize_text_field( $data['checkin']  ?? '' );
         $checkout = sanitize_text_field( $data['checkout'] ?? '' );
 
-        // Check the session lock.
-        $lock_valid   = self::validate_lock( $session_token, $checkin, $checkout );
-        $paystack_ref = sanitize_text_field( $data['paystack_ref'] ?? '' );
-        $has_conflict = false;
-
-        if ( ! $lock_valid ) {
-            // If there is no proof of payment either, reject outright.
-            if ( empty( $paystack_ref ) ) {
-                return [
-                    'success'    => false,
-                    'reference'  => '',
-                    'booking_id' => 0,
-                    'message'    => __( 'Your date hold has expired. Please start again.', 'ivory-booking' ),
-                ];
-            }
-
-            // Payment was captured despite an expired lock.
-            // Do a fresh availability check as a fallback.
-            if ( ! Ivory_Database::is_range_available( $checkin, $checkout ) ) {
-                // Rare conflict: money taken but dates are now booked by someone else.
-                // We still save the record so no payment is silently lost,
-                // mark it 'conflict', and alert the admin immediately.
-                $has_conflict = true;
-            }
-            // If dates are still free, we proceed as normal — no lock needed.
+        if ( ! Ivory_Database::is_range_available( $checkin, $checkout ) ) {
+            return [
+                'success'    => false,
+                'reference'  => '',
+                'booking_id' => 0,
+                'message'    => __( 'These dates are no longer available. Please select different dates.', 'ivory-booking' ),
+            ];
         }
+
+        $has_conflict = false;
 
         $guests = max( 1, min( 2, (int) ( $data['guests'] ?? 2 ) ) );
         $nights = self::calculate_nights( $checkin, $checkout );
@@ -206,34 +191,14 @@ class Ivory_Booking {
             [ '%d' ]
         );
 
-        // Consume the lock (no-op if already expired and purged by cron — that's fine).
-        self::consume_lock( $session_token );
-
         $wpdb->query( 'COMMIT' );
-
-        // If a date conflict was detected, alert the admin urgently.
-        // The guest still gets a booking record so their payment isn't lost.
-        if ( $has_conflict ) {
-            Ivory_Email::send_conflict_alert( [
-                'reference'     => $reference,
-                'guest_name'    => sanitize_text_field( $data['name']  ?? '' ),
-                'guest_email'   => sanitize_email( $data['email']      ?? '' ),
-                'guest_phone'   => sanitize_text_field( $data['phone'] ?? '' ),
-                'checkin_date'  => $checkin,
-                'checkout_date' => $checkout,
-                'total_amount'  => $total,
-                'paystack_ref'  => $paystack_ref,
-            ] );
-        }
 
         return [
             'success'      => true,
             'reference'    => $reference,
             'booking_id'   => $booking_id,
             'has_conflict' => $has_conflict,
-            'message'      => $has_conflict
-                ? __( 'Booking saved with a date conflict — admin has been notified.', 'ivory-booking' )
-                : __( 'Booking created. Awaiting payment.', 'ivory-booking' ),
+            'message'      => __( 'Booking created. Awaiting payment.', 'ivory-booking' ),
         ];
     }
 

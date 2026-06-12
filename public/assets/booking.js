@@ -471,21 +471,35 @@
       hideError(errorBox);
 
       try {
-        // 1. Lock the dates — also send guest details so admin gets a heads-up email
-        const lockRes = await apiFetch('lock', 'POST', {
-          checkin,
-          checkout,
-          name:  $('input[name="guest_name"]', form)?.value.trim(),
-          email: $('input[name="email"]',       form)?.value.trim(),
-          phone: $('input[name="phone"]',        form)?.value.trim(),
-        });
-        if (!lockRes.success) {
-          showError(errorBox, lockRes.message || cfg.i18n?.errorGeneric);
+        // 1. Initialize the pending booking (creates DB record + sends alert email)
+        const rawData = gatherFormData(form, checkin, checkout, guests, '');
+        let initRes;
+        
+        const fileInput = form.querySelector('input[name="id_document"]');
+        const hasFile   = fileInput && fileInput.files && fileInput.files.length > 0;
+
+        if (hasFile) {
+          const fd = new FormData();
+          Object.entries(rawData).forEach(([k, v]) => fd.append(k, v));
+          fd.append('id_document', fileInput.files[0]);
+
+          const req = await fetch(API + 'booking/init', {
+            method: 'POST',
+            headers: { 'X-WP-Nonce': NONCE },
+            body: fd
+          });
+          initRes = await req.json();
+        } else {
+          initRes = await apiFetch('booking/init', 'POST', rawData);
+        }
+
+        if (!initRes.success) {
+          showError(errorBox, initRes.message || cfg.i18n?.errorGeneric);
           setLoading(proceedBtn, false);
           return;
         }
 
-        const sessionToken = lockRes.token;
+        const bookingRef = initRes.reference;
 
         // 2. Launch Paystack
         const handler = PaystackPop.setup({
@@ -495,46 +509,32 @@
           currency:  'NGN',
           ref:       `IVORY-${Date.now()}`,
           metadata: {
-            booking_reference_pending: true,
+            booking_reference: bookingRef,
             checkin,
             checkout,
-            guests,
-            session_token: sessionToken,
+            guests
           },
           onClose: () => {
             setLoading(proceedBtn, false);
-            showError(errorBox, 'Payment was cancelled. Your date hold is still active for a few minutes.');
+            showError(errorBox, 'Payment was cancelled. Your booking is saved as pending.');
           },
           callback: async (response) => {
-            // 3. Build booking payload and create record
-            const rawData = gatherFormData(form, checkin, checkout, guests, sessionToken);
-            rawData.paystack_ref = response.reference; // pass Paystack transaction ref
+            // 3. Confirm payment with the server
+            const confirmRes = await apiFetch('booking/confirm', 'POST', {
+              reference: bookingRef,
+              paystack_ref: response.reference
+            });
 
-            let bookRes;
-            const fileInput = form.querySelector('input[name="id_document"]');
-            const hasFile   = fileInput && fileInput.files && fileInput.files.length > 0;
-
-            if (hasFile) {
-              // Multipart so the file travels with the rest of the data
-              const fd = new FormData();
-              Object.entries(rawData).forEach(([k, v]) => fd.append(k, v));
-              fd.append('id_document', fileInput.files[0]);
-              bookRes = await fetch(API + 'booking', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: { 'X-WP-Nonce': NONCE }, // no Content-Type — let browser set boundary
-                body: fd,
-              }).then(r => r.json());
-            } else {
-              bookRes = await apiFetch('booking', 'POST', rawData);
-            }
-
-            if (bookRes.success) {
-              window.location.href = `${cfg.confirmUrl}?ref=${bookRes.reference}&pref=${response.reference}`;
-            } else {
-              showError(errorBox, bookRes.message || cfg.i18n?.errorGeneric);
+            if (!confirmRes.success) {
               setLoading(proceedBtn, false);
+              showError(errorBox, confirmRes.message || 'Payment received but could not confirm booking. Please contact support.');
+              return;
             }
+
+            // Success -> redirect
+            const successUrl = new URL(cfg.confirmationUrl || '/ivory-confirmation', window.location.origin);
+            successUrl.searchParams.set('ref', bookingRef);
+            window.location.href = successUrl.toString();
           },
         });
 
