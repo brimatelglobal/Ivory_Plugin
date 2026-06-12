@@ -536,21 +536,30 @@
 /* ── Editable date inputs inside summary ─────────────────────────────────── */
 .iv-sum-dates-row { align-items: center; }
 
-.iv-date-edit {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 6px;
-  color: var(--iv-white);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  padding: 5px 8px;
+.iv-date-picker-wrap {
+  position: relative;
+  display: inline-block;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  color-scheme: dark;
 }
-.iv-date-edit:hover  { border-color: var(--iv-gold); background: rgba(255,255,255,0.12); }
-.iv-date-edit:focus  { outline: none; border-color: var(--iv-gold); background: rgba(255,255,255,0.15); }
+
+.iv-date-picker-wrap strong {
+  border-bottom: 1px dashed rgba(255,255,255,0.4);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.iv-date-picker-wrap:hover strong {
+  border-color: var(--iv-gold);
+  color: var(--iv-gold);
+}
+
+.iv-date-hidden {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
 
 .iv-dates-hint {
   font-size: 11px;

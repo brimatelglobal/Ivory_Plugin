@@ -374,7 +374,7 @@
     let   nights  = daysBetween(parseDate(checkin), parseDate(checkout));
     let   total   = nights * rate;
 
-    const fmt = dt => parseDate(dt).toLocaleDateString('en-NG', { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+    const fmt = dt => dt ? parseDate(dt).toLocaleDateString('en-NG', { weekday:'short', day:'numeric', month:'long', year:'numeric' }) : '—';
 
     // ── Wire up editable date inputs ──────────────────────────────────────
     const ciInput = document.getElementById('iv-date-checkin');
@@ -384,6 +384,14 @@
     if (coInput) {
       coInput.value = checkout;
       coInput.min   = checkin; // checkout must be after checkin
+    }
+
+    function updateDateTexts() {
+      const sumPanel = $('.ivory-checkout-summary');
+      if (sumPanel) {
+        $('#iv-sum-checkin-text',  sumPanel) && ($('#iv-sum-checkin-text',  sumPanel).textContent = fmt(checkin));
+        $('#iv-sum-checkout-text', sumPanel) && ($('#iv-sum-checkout-text', sumPanel).textContent = fmt(checkout));
+      }
     }
 
     function recalcSummary() {
@@ -408,6 +416,7 @@
           checkout = '';
         }
       }
+      updateDateTexts();
       recalcSummary();
     });
 
@@ -417,12 +426,15 @@
       if (ciInput && checkout <= ciInput.value) {
         coInput.value = '';
         checkout = '';
+        updateDateTexts();
         return;
       }
+      updateDateTexts();
       recalcSummary();
     });
 
     // Populate summary panel
+    updateDateTexts();
     const sumPanel = $('.ivory-checkout-summary');
     if (sumPanel) {
       $('#iv-sum-nights',   sumPanel) && ($('#iv-sum-nights',   sumPanel).textContent = nights);

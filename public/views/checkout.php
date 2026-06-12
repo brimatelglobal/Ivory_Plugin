@@ -144,13 +144,19 @@ if ( ! defined( 'ABSPATH' ) ) exit;
       </div>
       <div class="iv-sum-row iv-sum-dates-row">
         <span><?php esc_html_e( 'Check-in', 'ivory-booking' ); ?></span>
-        <input type="date" id="iv-date-checkin" class="iv-date-edit"
-               min="<?php echo esc_attr( date('Y-m-d') ); ?>" required>
+        <label class="iv-date-picker-wrap">
+          <strong id="iv-sum-checkin-text">—</strong>
+          <input type="date" id="iv-date-checkin" class="iv-date-hidden"
+                 min="<?php echo esc_attr( date('Y-m-d') ); ?>" required>
+        </label>
       </div>
       <div class="iv-sum-row iv-sum-dates-row">
         <span><?php esc_html_e( 'Check-out', 'ivory-booking' ); ?></span>
-        <input type="date" id="iv-date-checkout" class="iv-date-edit"
-               min="<?php echo esc_attr( date('Y-m-d', strtotime('+1 day')) ); ?>" required>
+        <label class="iv-date-picker-wrap">
+          <strong id="iv-sum-checkout-text">—</strong>
+          <input type="date" id="iv-date-checkout" class="iv-date-hidden"
+                 min="<?php echo esc_attr( date('Y-m-d', strtotime('+1 day')) ); ?>" required>
+        </label>
       </div>
       <p class="iv-dates-hint">✏️ <?php esc_html_e( 'Tap a date to change it', 'ivory-booking' ); ?></p>
       <div class="iv-sum-row">
