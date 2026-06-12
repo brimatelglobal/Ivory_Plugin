@@ -197,42 +197,39 @@ class Ivory_Database {
      * Check whether a given checkin–checkout range overlaps any existing
      * confirmed/pending booking or block. Returns true if the range is free.
      */
-    public static function is_range_available( string $checkin, string $checkout ): bool {
+    public static function is_range_available( string $checkin, string $checkout, string $exclude_reference = '' ): bool {
         global $wpdb;
 
         // Check bookings table.
-        $booking_conflict = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM %i
-                 WHERE status IN ('pending', 'confirmed')
-                   AND checkin_date  < %s
-                   AND checkout_date > %s",
-                self::table_bookings(),
-                $checkout,
-                $checkin
-            )
-        );
-
-        if ( (int) $booking_conflict > 0 ) {
-            return false;
+        if ( $exclude_reference ) {
+            $booking_conflict = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM %i
+                     WHERE status IN ('pending', 'confirmed')
+                       AND reference != %s
+                       AND checkin_date  < %s
+                       AND checkout_date > %s",
+                    self::table_bookings(),
+                    $exclude_reference,
+                    $checkout,
+                    $checkin
+                )
+            );
+        } else {
+            $booking_conflict = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM %i
+                     WHERE status IN ('pending', 'confirmed')
+                       AND checkin_date  < %s
+                       AND checkout_date > %s",
+                    self::table_bookings(),
+                    $checkout,
+                    $checkin
+                )
+            );
         }
 
-        // Check active locks.
-        $now_wat       = wp_date( 'Y-m-d H:i:s' ); // WAT — no MySQL timezone dependency
-        $lock_conflict = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM %i
-                 WHERE expires_at > %s
-                   AND checkin_date  < %s
-                   AND checkout_date > %s",
-                self::table_locks(),
-                $now_wat,
-                $checkout,
-                $checkin
-            )
-        );
-
-        if ( (int) $lock_conflict > 0 ) {
+        if ( (int) $booking_conflict > 0 ) {
             return false;
         }
 

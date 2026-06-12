@@ -463,6 +463,7 @@
     // Form submission
     const proceedBtn = $('.ivory-proceed-btn', form);
     const errorBox   = $('.iv-form-error', form);
+    let activePendingReference = '';
 
     proceedBtn && proceedBtn.addEventListener('click', async () => {
       if (!validateForm(form)) return;
@@ -472,7 +473,7 @@
 
       try {
         // 1. Initialize the pending booking (creates DB record + sends alert email)
-        const rawData = gatherFormData(form, checkin, checkout, guests, '');
+        const rawData = gatherFormData(form, checkin, checkout, guests, activePendingReference);
         let initRes;
         
         const fileInput = form.querySelector('input[name="id_document"]');
@@ -500,6 +501,7 @@
         }
 
         const bookingRef = initRes.reference;
+        activePendingReference = bookingRef; // Store for retries
 
         // 2. Launch Paystack
         const handler = PaystackPop.setup({
@@ -547,7 +549,7 @@
     });
   }
 
-  function gatherFormData(form, checkin, checkout, guests, sessionToken) {
+  function gatherFormData(form, checkin, checkout, guests, existingReference) {
     return {
       name:              $('input[name="guest_name"]',       form)?.value.trim(),
       email:             $('input[name="email"]',             form)?.value.trim(),
@@ -561,7 +563,7 @@
       checkin,
       checkout,
       guests,
-      session_token: sessionToken,
+      existing_reference: existingReference,
     };
   }
 

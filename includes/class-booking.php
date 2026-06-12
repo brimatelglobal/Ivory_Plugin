@@ -120,8 +120,18 @@ class Ivory_Booking {
 
         $checkin  = sanitize_text_field( $data['checkin']  ?? '' );
         $checkout = sanitize_text_field( $data['checkout'] ?? '' );
+        $existing_ref = sanitize_text_field( $data['existing_reference'] ?? '' );
 
-        if ( ! Ivory_Database::is_range_available( $checkin, $checkout ) ) {
+        // If reusing an existing pending booking, verify it exists.
+        $existing_booking = null;
+        if ( $existing_ref ) {
+            $existing_booking = Ivory_Database::get_booking_by_reference( $existing_ref );
+            if ( ! $existing_booking || $existing_booking['status'] !== 'pending' ) {
+                $existing_ref = ''; // Invalid or already confirmed, treat as new
+            }
+        }
+
+        if ( ! Ivory_Database::is_range_available( $checkin, $checkout, $existing_ref ) ) {
             return [
                 'success'    => false,
                 'reference'  => '',
@@ -130,66 +140,82 @@ class Ivory_Booking {
             ];
         }
 
-        $has_conflict = false;
-
         $guests = max( 1, min( 2, (int) ( $data['guests'] ?? 2 ) ) );
         $nights = self::calculate_nights( $checkin, $checkout );
         $rate   = (float) get_option( 'ivory_nightly_rate', 60000 );
         $total  = $nights * $rate;
 
-        $placeholder = 'IVY-PENDING-' . wp_generate_password( 8, false );
-
         $wpdb->query( 'START TRANSACTION' );
 
-        $inserted = $wpdb->insert(
-            Ivory_Database::table_bookings(),
-            [
-                'reference'     => $placeholder,
-                'guest_name'    => sanitize_text_field( $data['name']          ?? '' ),
-                'guest_email'   => sanitize_email( $data['email']              ?? '' ),
-                'guest_phone'   => sanitize_text_field( $data['phone']         ?? '' ),
-                'checkin_date'  => $checkin,
-                'checkout_date' => $checkout,
-                'nights'        => $nights,
-                'guests'        => $guests,
-                'total_amount'  => $total,
-                'status'        => $has_conflict ? 'conflict' : 'pending',
-                'id_file_path'      => sanitize_text_field( $data['id_file_path']   ?? '' ),
-                'special_req'       => sanitize_textarea_field( $data['special_req'] ?? '' ),
-                'address'           => sanitize_text_field( $data['address']      ?? '' ),
-                'occupation'        => sanitize_text_field( $data['occupation']       ?? '' ),
-                'next_of_kin'       => sanitize_text_field( $data['next_of_kin']      ?? '' ),
-                'next_of_kin_phone' => sanitize_text_field( $data['next_of_kin_phone'] ?? '' ),
-                'booking_reason'    => sanitize_text_field( $data['booking_reason'] ?? '' ),
-                'source'            => 'website',
-            ],
-            [ '%s','%s','%s','%s','%s','%s','%d','%d','%f','%s','%s','%s','%s','%s','%s','%s','%s','%s' ]
-        );
+        $update_data = [
+            'guest_name'    => sanitize_text_field( $data['name']          ?? '' ),
+            'guest_email'   => sanitize_email( $data['email']              ?? '' ),
+            'guest_phone'   => sanitize_text_field( $data['phone']         ?? '' ),
+            'checkin_date'  => $checkin,
+            'checkout_date' => $checkout,
+            'nights'        => $nights,
+            'guests'        => $guests,
+            'total_amount'  => $total,
+            'special_req'       => sanitize_textarea_field( $data['special_req'] ?? '' ),
+            'address'           => sanitize_text_field( $data['address']      ?? '' ),
+            'occupation'        => sanitize_text_field( $data['occupation']       ?? '' ),
+            'next_of_kin'       => sanitize_text_field( $data['next_of_kin']      ?? '' ),
+            'next_of_kin_phone' => sanitize_text_field( $data['next_of_kin_phone'] ?? '' ),
+            'booking_reason'    => sanitize_text_field( $data['booking_reason'] ?? '' ),
+        ];
 
-        if ( ! $inserted ) {
-            $wpdb->query( 'ROLLBACK' );
-            return [
-                'success'    => false,
-                'reference'  => '',
-                'booking_id' => 0,
-                'message'    => __( 'Could not save booking. Please try again.', 'ivory-booking' ),
-            ];
+        if ( ! empty( $data['id_file_path'] ) ) {
+            $update_data['id_file_path'] = sanitize_text_field( $data['id_file_path'] );
         }
 
-        $booking_id = $wpdb->insert_id;
+        if ( $existing_ref ) {
+            // Update the existing pending booking
+            $wpdb->update(
+                Ivory_Database::table_bookings(),
+                $update_data,
+                [ 'reference' => $existing_ref ],
+                [ '%s','%s','%s','%s','%s','%d','%d','%f','%s','%s','%s','%s','%s','%s','%s' ],
+                [ '%s' ]
+            );
+            $booking_id = $existing_booking['id'];
+            $reference  = $existing_ref;
+        } else {
+            // Create a new pending booking
+            $placeholder = 'IVY-PENDING-' . wp_generate_password( 8, false );
+            $insert_data = array_merge( $update_data, [
+                'reference' => $placeholder,
+                'status'    => 'pending',
+                'source'    => 'website',
+            ] );
 
-        // Generate a guaranteed-unique reference from the autoincrement ID.
-        // This avoids COUNT(*) race conditions when two bookings are created simultaneously.
-        $year      = (int) wp_date( 'Y' );
-        $reference = sprintf( 'IVY-%d-%05d', $year, $booking_id );
+            $inserted = $wpdb->insert(
+                Ivory_Database::table_bookings(),
+                $insert_data,
+                [ '%s','%s','%s','%s','%s','%d','%d','%f','%s','%s','%s','%s','%s','%s','%s','%s','%s' ]
+            );
 
-        $wpdb->update(
-            Ivory_Database::table_bookings(),
-            [ 'reference' => $reference ],
-            [ 'id'        => $booking_id ],
-            [ '%s' ],
-            [ '%d' ]
-        );
+            if ( ! $inserted ) {
+                $wpdb->query( 'ROLLBACK' );
+                return [
+                    'success'    => false,
+                    'reference'  => '',
+                    'booking_id' => 0,
+                    'message'    => __( 'Could not save booking. Please try again.', 'ivory-booking' ),
+                ];
+            }
+
+            $booking_id = $wpdb->insert_id;
+            $year       = (int) wp_date( 'Y' );
+            $reference  = sprintf( 'IVY-%d-%05d', $year, $booking_id );
+
+            $wpdb->update(
+                Ivory_Database::table_bookings(),
+                [ 'reference' => $reference ],
+                [ 'id'        => $booking_id ],
+                [ '%s' ],
+                [ '%d' ]
+            );
+        }
 
         $wpdb->query( 'COMMIT' );
 
