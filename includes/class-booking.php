@@ -124,10 +124,13 @@ class Ivory_Booking {
 
         // If reusing an existing pending booking, verify it exists.
         $existing_booking = null;
+        $is_update        = false;
         if ( $existing_ref ) {
             $existing_booking = Ivory_Database::get_booking_by_reference( $existing_ref );
             if ( ! $existing_booking || $existing_booking['status'] !== 'pending' ) {
                 $existing_ref = ''; // Invalid or already confirmed, treat as new
+            } else {
+                $is_update = true;
             }
         }
 
@@ -224,6 +227,7 @@ class Ivory_Booking {
             'reference'    => $reference,
             'booking_id'   => $booking_id,
             'has_conflict' => $has_conflict,
+            'is_update'    => $is_update,
             'message'      => __( 'Booking created. Awaiting payment.', 'ivory-booking' ),
         ];
     }
@@ -236,16 +240,17 @@ class Ivory_Booking {
     public static function confirm_booking( string $reference, string $paystack_ref ): bool {
         global $wpdb;
 
-        // Accept both 'pending' (normal flow) and 'conflict' (expired-lock fallback)
-        // so emails are never silently blocked by an unexpected status.
+        // Accept 'pending' (normal flow), 'conflict' (expired-lock fallback),
+        // and 'cancelled' (in case a bank transfer payment arrives after the 90-minute cron expiration)
+        // so emails and payment confirmations are never silently dropped.
         $booking = Ivory_Database::get_booking_by_reference( $reference );
         if ( ! $booking ) {
             return false;
         }
 
-        $allowed_statuses = [ 'pending', 'conflict' ];
+        $allowed_statuses = [ 'pending', 'conflict', 'cancelled' ];
         if ( ! in_array( $booking['status'], $allowed_statuses, true ) ) {
-            // Already confirmed, cancelled, or completed — do not double-send.
+            // Already confirmed or completed — do not double-send.
             return false;
         }
 

@@ -181,9 +181,9 @@ class Ivory_Public {
 
         $result = Ivory_Booking::init_booking( $body );
 
-        if ( $result['success'] ) {
+        if ( $result['success'] && empty( $result['is_update'] ) ) {
             Ivory_Email::send_pending_booking_alert( [
-                'guest_name'    => sanitize_text_field( $body['guest_name'] ?? '' ),
+                'guest_name'    => sanitize_text_field( $body['name']       ?? '' ),
                 'guest_email'   => sanitize_email(      $body['email']      ?? '' ),
                 'guest_phone'   => sanitize_text_field( $body['phone']      ?? '' ),
                 'checkin_date'  => sanitize_text_field( $body['checkin']    ?? '' ),
