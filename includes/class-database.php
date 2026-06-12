@@ -165,8 +165,8 @@ class Ivory_Database {
 
         foreach ( (array) $bookings as $row ) {
             $results[] = [
-                'checkin'  => $row['checkin_date'],
-                'checkout' => $row['checkout_date'],
+                'checkin'  => substr( $row['checkin_date'], 0, 10 ),
+                'checkout' => substr( $row['checkout_date'], 0, 10 ),
                 'type'     => 'booked',
             ];
         }
@@ -184,8 +184,8 @@ class Ivory_Database {
 
         foreach ( (array) $blocks as $row ) {
             $results[] = [
-                'checkin'  => $row['block_start'],
-                'checkout' => $row['block_end'],
+                'checkin'  => substr( $row['block_start'], 0, 10 ),
+                'checkout' => substr( $row['block_end'], 0, 10 ),
                 'type'     => $row['source'] === 'manual' ? 'blocked' : 'synced',
             ];
         }
